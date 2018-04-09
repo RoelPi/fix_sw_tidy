@@ -2,6 +2,8 @@ rm(list=ls())
 
 library(data.table)
 library(ggplot2)
+library(microbenchmark)
+library(dplyr)
 
 set.seed(5)
 
@@ -34,7 +36,32 @@ ggplot(boats,aes(x=date)) +
   geom_line(aes(y=blue),color='blue') +
   labs(x='',y='boats',title='Boats counted in Oslo')
 
+######################################################################
+# Third snippet: PLOT TIDY DATA ######################################
+######################################################################
+
 ggplot(tidy_boats,aes(x=date,y=count,col=color,group=color)) +
   geom_line() +
   labs(x='',y='boats',title='Boats counted in Oslo')
 
+######################################################################
+# Fourth snippet: PLOT TIDY DATA FACETS ##############################
+######################################################################
+
+ggplot(tidy_boats,aes(x=date,y=count)) +
+  geom_line() +
+  labs(x='',y='boats',title='Boats counted in Oslo') +
+  facet_grid(.~color)
+
+######################################################################
+# Fifth snippet: MICROBENCHMARKS #####################################
+######################################################################
+
+microbenchmark(tidy_boats[,.(total=sum(count)),by=date])
+microbenchmark(tidy_boats %>% group_by(color) %>% summarise(total=sum(count)))
+
+microbenchmark(tidy_boats[color == 'green'])
+microbenchmark(tidy_boats %>% filter(color == green))
+
+microbenchmark(tidy_boats[,.(date,color,count)])
+microbenchmark(tidy_boats %>% select(date,color,count))
